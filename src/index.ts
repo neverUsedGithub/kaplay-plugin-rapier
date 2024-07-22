@@ -167,6 +167,12 @@ export interface RapierBodyComp extends Comp {
   applyImpulse(vec: Vec2): void;
 
   /**
+   * Apply a torque impulse to the rigidbody
+   * @param impulse The impulse to apply.
+   */
+  applyTorqueImpulse(impulse: number): void;
+
+  /**
    * Lock the position of the rigidbody
    * @param locked If true, locks the position of the rigidbody. If false, unlocks it.
    */
@@ -372,6 +378,12 @@ function rapierBody(this: KaboomCtx, opts?: RapierBodyOptions): RapierBodyComp {
       ensureBody(this, rbody);
 
       rbody.applyImpulse(new R.Vector2(vec.x, vec.y), true);
+    },
+
+    applyTorqueImpulse(impulse: number) {
+      ensureBody(this, rbody);
+
+      rbody.applyTorqueImpulse(impulse, true);
     },
 
     translate(...args: Vec2Args) {
@@ -588,36 +600,29 @@ export default function rapierPlugin(
         "Not to calling and awaiting `load()` before instantiating `kaplay` may result in unexpected bugs."
       );
 
-    let lastUpdate: number = Date.now();
     const PHYSICS_STEP = opts?.physicsStep ?? 5; // 200hz physics by default
 
     let updateCount = 0;
     let lastStepTook = 0;
     let stepStart = 0;
 
+    let acc = 0;
+
     k.onUpdate(() => {
-      const current = Date.now();
-
       if (!world) return;
-      if (lastUpdate && current < lastUpdate + PHYSICS_STEP) return;
 
-      const delta = current - lastUpdate;
-      const steps = Math.floor(delta / PHYSICS_STEP);
-      const extraTime = delta - steps * PHYSICS_STEP;
-
-      lastUpdate = current + extraTime;
-
+      acc += k.dt() * 1000;
+      
       world.gravity.y = k.getGravity();
 
-      updateCount += steps;
-
-      for (let i = 0; i < steps; i++) {
-        if (k.debug.inspect && i === steps - 1) stepStart = performance.now();
+      while (acc >= PHYSICS_STEP) {
+        if (k.debug.inspect) stepStart = performance.now();
 
         world.step();
+        acc -= PHYSICS_STEP;
+        updateCount++;
 
-        if (k.debug.inspect && i === steps - 1)
-          lastStepTook = performance.now() - stepStart;
+        if (k.debug.inspect) lastStepTook = performance.now() - stepStart;
       }
     });
 
