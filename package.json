@@ -1,0 +1,42 @@
+{
+  "name": "kaplay-physics-rapier",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "vite test",
+    "build": "tsup"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./global": {
+      "import": "./src/global.js",
+      "types": "./src/global.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src/global.d.ts",
+    "src/global.js"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "kaplay": "^3001.0.0-alpha.18.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.2.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4",
+    "vite-plugin-wasm": "^3.3.0"
+  },
+  "dependencies": {
+    "@dimforge/rapier2d": "^0.14.0"
+  }
+}
