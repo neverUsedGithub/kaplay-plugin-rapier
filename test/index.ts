@@ -49,6 +49,12 @@ k.onKeyPress("space", () => {
   if (player.isGrounded()) player.jump();
 });
 
+k.onKeyPress("enter", () => {
+  k.debug.log(player.velocity);
+
+  player.velocity.y = -200;
+});
+
 k.onUpdate(() => {
   const body = player.getRigidBody();
   const direction = k.vec2(0, 0);

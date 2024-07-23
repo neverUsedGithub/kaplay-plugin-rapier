@@ -219,6 +219,11 @@ export interface RapierBodyComp extends Comp {
    * The gravity scale of the rigidbody.
    */
   gravityScale: number;
+
+  /**
+   * The velocity of the rigidbody.
+   */
+  velocity: Vec2;
 }
 
 type RapierGameObj = GameObj<
@@ -316,6 +321,33 @@ function rapierBody(this: KaboomCtx, opts?: RapierBodyOptions): RapierBodyComp {
     set gravityScale(gravityScale: number) {
       ensureBody(this, rbody);
       rbody.setGravityScale(gravityScale, true);
+    },
+
+    get velocity() {
+      ensureBody(this, rbody);
+      const _body = rbody;
+      const { x, y } = rbody.linvel();
+
+      return new Proxy(k.vec2(x, y), {
+        set(target: any, p, newValue) {
+          if (p === "x" || p === "y") {
+            const curr = _body.linvel();
+            curr[p] = newValue;
+
+            _body.setLinvel(curr, true);
+          }
+
+          target[p] = newValue;
+
+          return true;
+        },
+      });
+    },
+
+    set velocity(vel: Vec2) {
+      ensureBody(this, rbody);
+
+      rbody.setLinvel(vel, true);
     },
 
     jump(power?: number) {
@@ -612,7 +644,7 @@ export default function rapierPlugin(
       if (!world) return;
 
       acc += k.dt() * 1000;
-      
+
       world.gravity.y = k.getGravity();
 
       while (acc >= PHYSICS_STEP) {
